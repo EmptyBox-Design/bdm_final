@@ -1,49 +1,3 @@
-# Read the centerline data
-# parse the data to get only the fields we need
-# return the parsed dataset as a two dimensional array
-def readCenterLineData(fileName):
-    
-    # importing csv module 
-    import csv 
-
-    # initializing the titles and rows list 
-    fields = [] 
-    cscl = {}
-
-    # reading csv file 
-    with open(fileName, 'r') as csvfile: 
-        # creating a csv reader object 
-        csvreader = csv.reader(csvfile) 
-
-        # extracting field names through first row 
-        fields = next(csvreader) 
-
-        # extracting each data row one by one
-        # do not drop any rows
-        # create a dictionary of fullstreet and duplicate for street label
-        # house number information inside the object
-        for row in csvreader:
-            
-            boro = row[13]
-            
-            full_street_key = (row[28], boro)
-            
-            street_label_key = (row[10], boro)
-
-            cscl[full_street_key] = {
-                "physicalID":  row[0],
-                "odd_house": [row[2], row[3]],
-                "even_house": [row[4], row[5]]
-            }
-            
-            cscl[street_label_key] = {
-                "physicalID":  row[0],
-                "odd_house": [row[2], row[3]],
-                "even_house": [row[4], row[5]]
-            }
-
-    return cscl
-
 # converts violation county code abriveation to 
 # centerline code  1 - 5
 def getCounty(county):
@@ -168,11 +122,69 @@ def processViolations(pid, records):
 #         except ValueError:
 #             match = None
 
+# ('28 AVE', '4'): {'physicalID': '22164',
+#   'odd_house': ['157-001', '157-023'],
+#   'even_house': ['157-000', '157-098']}
+
+# Read the centerline data
+# parse the data to get only the fields we need
+# return the parsed dataset as a two dimensional array
+def readCenterLineDataRDD(pid, records):
+
+    import csv
+    
+    # Skip the header
+    if pid==0:
+        next(records)
+
+    # reader
+    reader = csv.reader(records)
+    
+    # container
+    data = {}
+
+    for row in reader:
+
+        boro = row[13]
+
+        full_street_key = (row[28], boro)
+
+        street_label_key = (row[10], boro)
+
+        physicalID = row[0]
+
+        odd_house = [row[2], row[3]]
+
+        even_house = [row[4], row[5]]
+        
+        data[full_street_key]  = [physicalID, odd_house, even_house]
+        data[street_label_key] = [physicalID, odd_house, even_house]
+
+    return data.items()
+
+# returns centerline table as dictionary
+# by street_label = data
+# by full_street = data
+def createLookupTable(data):
+    
+    table = {}
+    
+    for d in data:
+        table[d[0]] = d[1]
+
+    return table
+
+# writes data csv 
+# unpacks value tuples
+def toCSVLine(data):
+    return ','.join(str(e) for e in data)
+
+# violation example joined by _
+# [house_number, street_name, county, year]
 def mapToCenterLineData(record, cscl_data):
 
     d = record[0].split("_")
     key = (d[1], d[2])
-
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
     # if match check house number
     if key in cscl_data:
@@ -182,32 +194,34 @@ def mapToCenterLineData(record, cscl_data):
         new_key = ID + "-" + year
 
         return (new_key, record[1])
-   
-
-# writes data csv 
-# unpacks value tuples
-def toCSVLine(data):
-  return ','.join(str(e) for e in data)
 
 if __name__ == "__main__":
 
-  from pyspark import SparkContext
-  sc = SparkContext()
-  import sys
+    from pyspark import SparkContext
+    sc = SparkContext()
 
-  output_location = sys.argv[1]
+    import sys
 
-  violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violations/"
+    output_location = sys.argv[1]
 
-  cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
+    violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violations/"
+    # violation_data_file_location = "./Data/2018.csv"
+    cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
+    # cscl_data_location = "./Data/nyc_cscl.csv"
+    
+    cscl_read = sc.textFile(cscl_data_location)
+    
+    cscl_data_map = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD)
+    
+    cscl_data = createLookupTable(cscl_data_map.collect())
+    
+    cscl_data_broadcast = sc.broadcast(cscl_data).value
 
-  cscl_data = sc.broadcast(readCenterLineData(cscl_data_location)).value
+    rdd = sc.textFile(violation_data_file_location)
+    
+    counts = rdd.mapPartitionsWithIndex(processViolations) \
+        .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .map(toCSVLine) \
+        .saveAsTextFile(output_location)
 
-  rdd = sc.textFile(violation_data_file_location)
-
-  counts = rdd.mapPartitionsWithIndex(processViolations) \
-    .map(lambda data: mapToCenterLineData(data, cscl_data)) \
-    .map(toCSVLine) \
-    .saveAsTextFile(output_location)
-
-  print('done processing!')
+    print('done processing!')

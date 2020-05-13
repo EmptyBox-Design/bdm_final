@@ -46,7 +46,7 @@ def processViolations(pid, records):
 
                 house_number = row[23]
 
-                street_name = row[24]
+                street_name = row[24].lower()
 
                 violation_row = [house_number, street_name, county, year]
 
@@ -147,9 +147,9 @@ def readCenterLineDataRDD(pid, records):
 
         boro = row[13]
 
-        full_street_key = (row[28], boro)
+        full_street_key = (row[28].lower(), boro)
 
-        street_label_key = (row[10], boro)
+        street_label_key = (row[10].lower(), boro)
 
         physicalID = row[0]
 
@@ -185,10 +185,13 @@ def mapToCenterLineData(record, cscl_data):
 
     d = record[0].split("_")
     key = (d[1], d[2])
+    # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
-    # if match check house number
-    if key in cscl_data:
-        ID = cscl_data[key].physicalID
+
+    if (key) in cscl_data:
+
+        ID = cscl_data[key][0]
+
         year = d[3]
 
         new_key = ID + "-" + year
@@ -214,13 +217,14 @@ if __name__ == "__main__":
     cscl_data_map = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD)
     
     cscl_data = createLookupTable(cscl_data_map.collect())
-    
+
     cscl_data_broadcast = sc.broadcast(cscl_data).value
 
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .filter(lambda x: x is not None) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

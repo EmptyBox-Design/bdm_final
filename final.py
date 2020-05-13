@@ -1,20 +1,17 @@
 # Read the centerline data
 # parse the data to get only the fields we need
 # return the parsed dataset as a two dimensional array
-def readCenterLineData():
+def readCenterLineData(fileName):
     
     # importing csv module 
     import csv 
-
-    # csv file name 
-    filename = "hdfs:///tmp/bdm/nyc_cscl.csv"
 
     # initializing the titles and rows list 
     fields = [] 
     cscl = {}
 
     # reading csv file 
-    with open(filename, 'r') as csvfile: 
+    with open(fileName, 'r') as csvfile: 
         # creating a csv reader object 
         csvreader = csv.reader(csvfile) 
 
@@ -202,7 +199,9 @@ if __name__ == "__main__":
 
   violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violations/"
 
-  cscl_data = sc.broadcast(readCenterLineData()).value
+  cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
+
+  cscl_data = sc.broadcast(readCenterLineData(cscl_data_location)).value
 
   rdd = sc.textFile(violation_data_file_location)
 

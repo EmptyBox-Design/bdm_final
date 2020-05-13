@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     output_location = sys.argv[1]
 
-    violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violations/"
+    violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/"
     # violation_data_file_location = "./Data/2018.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
     # cscl_data_location = "./Data/nyc_cscl.csv"

@@ -12,15 +12,18 @@ def getCounty(county):
     for row in enumerate(county_dict):
         if(county.upper() in row[1]):
             match = row[0]
-
     return str(match)
 
 def getYear(year):
+
     match = None
+
     try:
         match = year.split("/")[2]
+
     except IndexError:
         match = None
+
     return str(match)
 
 # return cleaned violations in tuple with the key being 
@@ -120,10 +123,10 @@ def matchHouseNumber(hn, odd_house, even_house):
                 # centerline data is a compound address
                 # returns True or False based on match
                 if(compareTupes(c_low, c_high, violation_house_number)):
-                    match = ID
+                    match = True
     # the violation house number is a tuple or at least not a numerical integer               
     except ValueError:
-        # the violation hosue number is not a integer
+        # the violation house number is not a integer
         # need to split it and treat it as a tuple
         # checking the second value for even or odd
         try:
@@ -140,7 +143,7 @@ def matchHouseNumber(hn, odd_house, even_house):
 
                 if(compareTupes(c_low, c_high, hn)):
                     match = True
-        # catching erros if value is not an integer such as if it is a compound value with alphabetical values
+        # catching errors if value is not an integer such as if it is a compound value with alphabetical values
         # or it is compound and is not a street we can match in a range
         except IndexError:
             match = False

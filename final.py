@@ -56,75 +56,99 @@ def processViolations(pid, records):
 
     return counts.items()
 
-# def matchHouseNumber(violation_house_number):
+def compareTupes(low, high, test):
+
+    try:
+        a = low.split("-")
+        a = (int(a[0]), int(a[1]))
+
+        b = high.split("-")
+        b = (int(b[0]), int(b[1]))
+
+        t = test.split("-")
+        t = (int(t[0]), int(t[1]))
+
+        if(t >= a and t <= b):
+            return True
+        else:
+            return False
+    except IndexError:
+        return False
+    except AttributeError:
+        return False
+
+def matchHouseNumber(hn, odd_house, even_house):
     
-#     try:
-#         # house number is an integer
-#         violation_house_number = int(hn)
+    match = False
+    
+    try:
+        # house number is an integer
+        violation_house_number = int(hn)
 
-#         if((violation_house_number % 2) == 0):
+        if((violation_house_number % 2) == 0):
 
-#             # house number is even
-#             c_low = centerLineRow[3]
-#             c_high = centerLineRow[4]
+            # house number is even
+            c_low = even_house[0]
+            c_high = even_house[1]
 
-#             try:
-#                 # checks if violation house number is greater or equal to min
-#                 # checks if violation house number is less than or equal to max
-#                 if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
-#                     # print('match')
-#                     # this means that the street name of full street name
-#                     # matched and house number is in range
-#                     match = ID
-#             except ValueError:
-#                 # centerline data is a compound address
-#                 # returns True or False based on match
-#                 if(compareTupes(c_low, c_high, violation_house_number)):
-#                     match = ID
+            try:
+                # checks if violation house number is greater or equal to min
+                # checks if violation house number is less than or equal to max
+                if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
+                    # print('match')
+                    # this means that the street name of full street name
+                    # matched and house number is in range
+                    match = True
+                    
+            except ValueError:
+                # centerline data is a compound address
+                # returns True or False based on match
+                if(compareTupes(c_low, c_high, violation_house_number)):
+                    match = True
 
-#         else:
-#             # house number is odd
-#             c_low = centerLineRow[0]
-#             c_high = centerLineRow[1]
+        else:
+            # house number is odd
+            c_low = odd_house[0]
+            c_high = odd_house[1]
 
-#             try:
-#                 if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
-#                     # this means that the street name of full street name
-#                     # matched and house number is in range
-#                     match = ID
-#             except ValueError:
-#                 # centerline data is a compound address
-#                 # returns True or False based on match
-#                 if(compareTupes(c_low, c_high, violation_house_number)):
-#                     match = ID
-#     # the violation house number is a tuple or at least not a numerical integer               
-#     except ValueError:
-#         # the violation hosue number is not a integer
-#         # need to split it and treat it as a tuple
-#         # checking the second value for even or odd
-#         try:
-#             if((int(hn.split("-")[1]) % 2) == 0):
-#                 # violation house number is even
-#                 c_low = centerLineRow[3]
-#                 c_high = centerLineRow[4]
+            try:
+                if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
+                    # this means that the street name of full street name
+                    # matched and house number is in range
+                    match = True
+            except ValueError:
+                # centerline data is a compound address
+                # returns True or False based on match
+                if(compareTupes(c_low, c_high, violation_house_number)):
+                    match = ID
+    # the violation house number is a tuple or at least not a numerical integer               
+    except ValueError:
+        # the violation hosue number is not a integer
+        # need to split it and treat it as a tuple
+        # checking the second value for even or odd
+        try:
+            if((int(hn.split("-")[1]) % 2) == 0):
+                # violation house number is even
+                c_low = even_house[0]
+                c_high = even_house[1]
 
-#                 if(compareTupes(c_low, c_high, hn)):
-#                     match = centerLineRow[2]
-#             else:
-#                 c_low = centerLineRow[0]
-#                 c_high = centerLineRow[1]
+                if(compareTupes(c_low, c_high, hn)):
+                    match = True
+            else:
+                c_low = odd_house[0]
+                c_high = odd_house[1]
 
-#                 if(compareTupes(c_low, c_high, hn)):
-#                     match = centerLineRow[2]
+                if(compareTupes(c_low, c_high, hn)):
+                    match = True
+        # catching erros if value is not an integer such as if it is a compound value with alphabetical values
+        # or it is compound and is not a street we can match in a range
+        except IndexError:
+            match = False
+        except ValueError:
+            match = False
 
-#         except IndexError:
-#             match = None
-#         except ValueError:
-#             match = None
-
-# ('28 AVE', '4'): {'physicalID': '22164',
-#   'odd_house': ['157-001', '157-023'],
-#   'even_house': ['157-000', '157-098']}
+    # returns either True or False
+    return match
 
 # Read the centerline data
 # parse the data to get only the fields we need
@@ -179,24 +203,30 @@ def createLookupTable(data):
 def toCSVLine(data):
     return ','.join(str(e) for e in data)
 
-# violation example joined by _
+# violation example joined by
 # [house_number, street_name, county, year]
+# currently returns NONE if no match is made
+# which means that the given violation did not match a centerline
 def mapToCenterLineData(record, cscl_data):
 
     d = record[0].split("_")
+    # key is violation street_name and county 
     key = (d[1], d[2])
+
     # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
-
     if (key) in cscl_data:
 
-        ID = cscl_data[key][0]
+        physicalID = cscl_data[key][0]
 
         year = d[3]
 
-        new_key = ID + "-" + year
-
-        return (new_key, record[1])
+        new_key = physicalID + "-" + year
+        
+        # takes violation house number and odd_house and even_house as inputs
+        # returns true or false if a match is made
+        if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
+            return (new_key, record[1])
 
 if __name__ == "__main__":
 

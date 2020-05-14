@@ -221,6 +221,20 @@ def mapToCenterLineData(record, cscl_data):
             if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
                 return (new_key, record[1])
 
+# input value as a nested tuple
+# returns list of flattened tuples
+def unpackTupes(data):
+    j = []
+    
+    def foo(a, b=None):
+        j.append(a)
+        j.append(b)
+
+    for i in data:
+        foo(*i)
+
+    return j
+
 if __name__ == "__main__":
 
     from pyspark import SparkContext

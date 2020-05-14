@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
       rows.append(row)
 
-      if(i == 100000):
+      if(i == 120000):
         # name of csv file  
         filename = "edit_cscl.csv"
             

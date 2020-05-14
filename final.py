@@ -1,8 +1,38 @@
+# inputs a violation number
+# returns integer value or tuple of integers
+# strips out letters
+# returns None for no matches for only letters and --
+def getHouseNumber(hn):
+    
+    import re
+    
+    def stripAZ(string):
+        return int(re.sub('\D', '', string))
+
+    
+    if(re.search(r'\d', hn)):
+        try:
+            hn = int(hn)
+            match = ("int",hn)
+        except ValueError:
+            match = None
+            test_split = hn.split("-")
+
+            if(len(test_split) == 1):
+                hn = stripAZ(hn)
+                match = ("int",hn)
+
+            elif(len(test_split) == 2):
+                match = ('compound',(stripAZ(test_split[0]), stripAZ(test_split[1])))
+        return match
+    else:
+        return None
+
 # converts violation county code abriveation to 
 # centerline code  1 - 5
 def getCounty(county):
     county_dict =[
-        ['MAN', 'MH', 'MN', 'NEWY', 'NEW', 'Y', 'NY'], 
+        ['MAN', 'MH', 'MN', 'NEWY', 'NEW', 'Y', 'NY', 'NEW Y'], 
         ['BRONX', 'BX', 'PBX'], 
         ['BK', 'K', 'KING', 'KINGS'],
         ['Q', 'QN', 'QNS', 'QU', 'QUEEN'],
@@ -12,18 +42,15 @@ def getCounty(county):
     for row in enumerate(county_dict):
         if(county.upper() in row[1]):
             match = row[0]
+
     return str(match)
 
 def getYear(year):
-
     match = None
-
     try:
         match = year.split("/")[2]
-
     except IndexError:
         match = None
-
     return str(match)
 
 # return cleaned violations in tuple with the key being 
@@ -33,6 +60,7 @@ def processViolations(pid, records):
 
     if(pid == 0):
         next(records)
+        
     for record in records:
         
         row = record.split(',')
@@ -59,97 +87,65 @@ def processViolations(pid, records):
 
     return counts.items()
 
-def compareTupes(low, high, test):
-
-    try:
-        a = low.split("-")
-        a = (int(a[0]), int(a[1]))
-
-        b = high.split("-")
-        b = (int(b[0]), int(b[1]))
-
-        t = test.split("-")
-        t = (int(t[0]), int(t[1]))
-
-        if(t >= a and t <= b):
-            return True
-        else:
-            return False
-    except IndexError:
-        return False
-    except AttributeError:
-        return False
-
 def matchHouseNumber(hn, odd_house, even_house):
     
     match = False
     
-    try:
-        # house number is an integer
-        violation_house_number = int(hn)
-
-        if((violation_house_number % 2) == 0):
-
-            # house number is even
-            c_low = even_house[0]
-            c_high = even_house[1]
-
-            try:
-                # checks if violation house number is greater or equal to min
-                # checks if violation house number is less than or equal to max
-                if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
-                    # print('match')
-                    # this means that the street name of full street name
-                    # matched and house number is in range
-                    match = True
-                    
-            except ValueError:
-                # centerline data is a compound address
-                # returns True or False based on match
-                if(compareTupes(c_low, c_high, violation_house_number)):
-                    match = True
-
-        else:
-            # house number is odd
-            c_low = odd_house[0]
-            c_high = odd_house[1]
-
-            try:
-                if(violation_house_number >= int(c_low) and violation_house_number <= int(c_high)):
-                    # this means that the street name of full street name
-                    # matched and house number is in range
-                    match = True
-            except ValueError:
-                # centerline data is a compound address
-                # returns True or False based on match
-                if(compareTupes(c_low, c_high, violation_house_number)):
-                    match = True
-    # the violation house number is a tuple or at least not a numerical integer               
-    except ValueError:
-        # the violation house number is not a integer
-        # need to split it and treat it as a tuple
-        # checking the second value for even or odd
+    checkHouseNumber = getHouseNumber(hn)
+    
+    def compareHouseNumberAsInt(hn, c_low, c_high):
         try:
-            if((int(hn.split("-")[1]) % 2) == 0):
-                # violation house number is even
-                c_low = even_house[0]
-                c_high = even_house[1]
-
-                if(compareTupes(c_low, c_high, hn)):
-                    match = True
+            if(hn >= int(c_low) and hn <= int(c_high)):
+                return True
             else:
-                c_low = odd_house[0]
-                c_high = odd_house[1]
-
-                if(compareTupes(c_low, c_high, hn)):
-                    match = True
-        # catching errors if value is not an integer such as if it is a compound value with alphabetical values
-        # or it is compound and is not a street we can match in a range
-        except IndexError:
-            match = False
+                return False
         except ValueError:
-            match = False
+            return False
+    # compares a given violation compound house number
+    
+    # with compound centerline datapoints
+    # returns true or false if a match is made
+    def compareTupes(test,low,high):
 
+        try:
+            a = low.split("-")
+            a = (int(a[0]), int(a[1]))
+
+            b = high.split("-")
+            b = (int(b[0]), int(b[1]))
+
+            if(test >= a and test <= b):
+                return True
+            else:
+                return False
+        except IndexError:
+            return False
+        except AttributeError:
+            return False
+        except ValueError:
+            return False
+        
+    if(checkHouseNumber is not None):
+        # violation house number is an integer
+        # assumes that a integer house number can only match with a integer centerline value
+        house_type = checkHouseNumber[0]
+        hn = checkHouseNumber[1]
+        
+        if(house_type == "int"):
+            
+            if((hn % 2) == 0):
+                match = compareHouseNumberAsInt(hn, even_house[0], even_house[1])
+            else:
+                match = compareHouseNumberAsInt(hn, odd_house[0], odd_house[1])
+                
+        # violation house number is compound
+        elif(house_type == 'compound'):
+            if((hn[1] %2) == 0):
+                match = compareTupes(hn, even_house[0], even_house[1])
+            else:
+                match = compareTupes(hn, odd_house[0], odd_house[1])
+    else:
+        match = False
     # returns either True or False
     return match
 
@@ -189,18 +185,6 @@ def readCenterLineDataRDD(pid, records):
 
     return data.items()
 
-# returns centerline table as dictionary
-# by street_label = data
-# by full_street = data
-def createLookupTable(data):
-    
-    table = {}
-    
-    for d in data:
-        table[d[0]] = d[1]
-
-    return table
-
 # writes data csv 
 # unpacks value tuples
 def toCSVLine(data):
@@ -211,6 +195,8 @@ def toCSVLine(data):
 # currently returns NONE if no match is made
 # which means that the given violation did not match a centerline
 def mapToCenterLineData(record, cscl_data):
+
+    import re
 
     d = record[0].split("_")
     # key is violation street_name and county 
@@ -226,10 +212,14 @@ def mapToCenterLineData(record, cscl_data):
 
         new_key = physicalID + "-" + year
         
+        return (new_key, record[1])
+        
         # takes violation house number and odd_house and even_house as inputs
         # returns true or false if a match is made
-        if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
-            return (new_key, record[1])
+#         if(len(d[0].strip()) > 0 and d[0] is not None):
+        if(re.search(r'\d', d[0])):
+            if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
+                return (new_key, record[1])
 
 if __name__ == "__main__":
 
@@ -241,15 +231,13 @@ if __name__ == "__main__":
     output_location = sys.argv[1]
 
     violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/"
-    # violation_data_file_location = "./Data/2018.csv"
+    # violation_data_file_location = "./Data/2016.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
     # cscl_data_location = "./Data/nyc_cscl.csv"
     
     cscl_read = sc.textFile(cscl_data_location)
     
-    cscl_data_map = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD)
-    
-    cscl_data = createLookupTable(cscl_data_map.collect())
+    cscl_data = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD).reduceByKey(lambda x,y: x+y).collectAsMap()
 
     cscl_data_broadcast = sc.broadcast(cscl_data).value
 
@@ -258,6 +246,9 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
         .filter(lambda x: x is not None) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        .groupByKey() \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

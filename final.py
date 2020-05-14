@@ -255,6 +255,7 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
         .filter(lambda x: x is not None) \
+        .reduceByKey(lambda x,y: x+y) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

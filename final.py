@@ -23,7 +23,7 @@ def getHouseNumber(hn):
                 match = ("int",int(hn))
 
             elif(len(test_split) == 2):
-                
+
                 strip = (stripAZ(test_split[0]), stripAZ(test_split[1]))
 
                 if(len(strip[0]) > 0 and len(strip[1]) > 0):
@@ -213,7 +213,7 @@ def mapToCenterLineData(record, cscl_data):
 
     # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
-    if (key) in cscl_data:
+    if key in cscl_data:
 
         physicalID = cscl_data[key][0]
 
@@ -257,7 +257,7 @@ if __name__ == "__main__":
     
     cscl_read = sc.textFile(cscl_data_location)
     
-    cscl_data = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD).reduceByKey(lambda x,y: x+y).collectAsMap()
+    cscl_data = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD).collectAsMap()
 
     cscl_data_broadcast = sc.broadcast(cscl_data).value
 
@@ -265,13 +265,13 @@ if __name__ == "__main__":
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-        .filter(lambda x: x is not None) \
-        .reduceByKey(lambda x,y: x+y) \
-        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        .groupByKey() \
-        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        .mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
     print('done processing!')
+        # .filter(lambda x: x is not None) \
+        # .reduceByKey(lambda x,y: x+y) \
+        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        # .groupByKey() \
+        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        # .mapValues(lambda x: unpackTupes(x)) \

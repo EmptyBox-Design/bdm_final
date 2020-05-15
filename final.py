@@ -265,11 +265,12 @@ if __name__ == "__main__":
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .filter(lambda x: x is not None) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
     print('done processing!')
-        # .filter(lambda x: x is not None) \
+        # 
         # .reduceByKey(lambda x,y: x+y) \
         # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
         # .groupByKey() \

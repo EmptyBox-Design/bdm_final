@@ -3,29 +3,39 @@
 # strips out letters
 # returns None for no matches for only letters and --
 def getHouseNumber(hn):
-    
-    import re
-    
-    def stripAZ(string):
-        return int(re.sub('\D', '', string))
 
+    import re
+
+    match = None
+
+    def stripAZ(string):
+        return re.sub('\D', '', string.strip())
+    
     if(re.search(r'\d', hn)):
         try:
-            hn = int(hn)
-            match = ("int",hn)
+            match = ("int",int(hn))
         except ValueError:
-            match = None
-            test_split = hn.split("-")
 
+            test_split = hn.split("-")
+            
             if(len(test_split) == 1):
                 hn = stripAZ(hn)
-                match = ("int",hn)
+                match = ("int",int(hn))
 
             elif(len(test_split) == 2):
-                match = ('compound',(stripAZ(test_split[0]), stripAZ(test_split[1])))
+                
+                strip = (stripAZ(test_split[0]), stripAZ(test_split[1]))
+
+                if(len(strip[0]) > 0 and len(strip[1]) > 0):
+                    match = ('compound', (int(strip[0]), int(strip[1])))
+                else:
+                    if(len(strip[0]) > 0):
+                        match = ("int",int(strip[0]))
+                    else:
+                        match = ("int",int(strip[1]))
         return match
     else:
-        return None
+        return match
 
 # converts violation county code abriveation to 
 # centerline code  1 - 5

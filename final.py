@@ -261,6 +261,8 @@ if __name__ == "__main__":
 
     cscl_data_broadcast = sc.broadcast(cscl_data).value
 
+    print("length of cscl data",len(cscl_data.keys()))
+
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \

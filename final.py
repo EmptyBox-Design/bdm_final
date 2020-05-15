@@ -9,7 +9,6 @@ def getHouseNumber(hn):
     def stripAZ(string):
         return int(re.sub('\D', '', string))
 
-    
     if(re.search(r'\d', hn)):
         try:
             hn = int(hn)
@@ -81,8 +80,8 @@ def processViolations(pid, records):
 
                 violation_row = [house_number, street_name, county, year]
 
-                key = "_".join(violation_row)
-
+                key = "__".join(violation_row)
+                # adds 1 to the key if the same violation on same street and house number exists
                 counts[key] = counts.get(key, 0) +1
 
     return counts.items()
@@ -95,7 +94,7 @@ def matchHouseNumber(hn, odd_house, even_house):
     
     def compareHouseNumberAsInt(hn, c_low, c_high):
         try:
-            if(hn >= int(c_low) and hn <= int(c_high)):
+            if(int(hn) >= int(c_low) and int(hn) <= int(c_high)):
                 return True
             else:
                 return False
@@ -198,7 +197,7 @@ def mapToCenterLineData(record, cscl_data):
 
     import re
 
-    d = record[0].split("_")
+    d = record[0].split("__")
     # key is violation street_name and county 
     key = (d[1], d[2])
 
@@ -212,14 +211,11 @@ def mapToCenterLineData(record, cscl_data):
 
         new_key = physicalID + "-" + year
         
-        return (new_key, record[1])
-        
         # takes violation house number and odd_house and even_house as inputs
         # returns true or false if a match is made
-#         if(len(d[0].strip()) > 0 and d[0] is not None):
         if(re.search(r'\d', d[0])):
             if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
-                return (new_key, record[1])
+                return (new_key, int(record[1]))
 
 # input value as a nested tuple
 # returns list of flattened tuples

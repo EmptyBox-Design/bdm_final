@@ -36,7 +36,7 @@ def getHouseNumber(hn):
     else:
         return None
 
-# converts violation county code abriveation to 
+# converts violation county code to boro code
 # centerline code  1 - 5
 def getCounty(county):
     county_dict =[
@@ -242,6 +242,9 @@ def unpackTupes(data):
 
 if __name__ == "__main__":
 
+    import time
+    start_time = time.time()
+
     from pyspark import SparkContext
     sc = SparkContext()
 
@@ -261,13 +264,14 @@ if __name__ == "__main__":
         .groupByKey() \
         .collectAsMap()
 
-    print("length of cscl data",len(cscl_data_map.keys()))
+    print("created cscl dictionary",len(cscl_data_map.keys()))
     
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
+        .reduceByKey(lambda x,y: x+y) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
         .filter(lambda x: x is not None) \
         .reduceByKey(lambda x,y: x+y) \
@@ -278,4 +282,4 @@ if __name__ == "__main__":
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
-    print('done processing!')
+    print ("done processing!", time.time() - start_time, "to run")

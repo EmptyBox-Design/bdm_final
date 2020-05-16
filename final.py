@@ -24,19 +24,24 @@ def getHouseNumber(hn):
                 match = ("int",int(hn))
 
             elif(len(test_split) == 2):
+                
+                # remove all letters from the tuple
                 strip = (stripAZ(test_split[0]), stripAZ(test_split[1]))
+
                 if(len(strip[0]) > 0 and len(strip[1]) > 0):
-                    match = ('compound', (int(strip[0]), int(strip[1])))
+                    match = ('compound', (strip[0], strip[1]))
                 else:
+                    # this tests whethere the tuple has only one number on either side of the -
+                    # return only that number
                     if(len(strip[0]) > 0):
                         match = ("int",int(strip[0]))
-                    else:
+                    elif(len(strip[1]) > 0):
                         match = ("int",int(strip[1]))
         return match
     else:
         return None
 
-# converts violation county code to boro code
+# converts violation county code abriveation to 
 # centerline code  1 - 5
 def getCounty(county):
     county_dict =[
@@ -89,9 +94,10 @@ def processViolations(pid, records):
 
                 violation_row = [house_number, street_name, county, year]
 
-                key = "_".join(violation_row)
+                key = "__".join(violation_row)
 
-                counts[key] = counts.get(key, 0) +1
+                if(int(year) > 2015):
+                    counts[key] = counts.get(key, 0) +1
 
     return counts.items()
 
@@ -109,20 +115,22 @@ def matchHouseNumber(hn, odd_house, even_house):
                 return False
         except ValueError:
             return False
+
     # compares a given violation compound house number
-    
     # with compound centerline datapoints
     # returns true or false if a match is made
     def compareTupes(test,low,high):
-
         try:
+
             a = low.split("-")
-            a = (int(a[0]), int(a[1]))
+            a = int(str(a[0]) + str(a[1]))
 
             b = high.split("-")
-            b = (int(b[0]), int(b[1]))
+            b = int(str(b[0]) + str(b[1]))
 
-            if(test >= a and test <= b):
+            z = int(str(test[0]) + str(test[1]))
+
+            if(z >= a and z <= b):
                 return True
             else:
                 return False
@@ -148,7 +156,7 @@ def matchHouseNumber(hn, odd_house, even_house):
                 
         # violation house number is compound
         elif(house_type == 'compound'):
-            if((hn[1] %2) == 0):
+            if((int(hn[1]) %2) == 0):
                 match = compareTupes(hn, even_house[0], even_house[1])
             else:
                 match = compareTupes(hn, odd_house[0], odd_house[1])
@@ -199,7 +207,7 @@ def mapToCenterLineData(record, cscl_data):
     
     import re
     
-    d = record[0].split("_")
+    d = record[0].split("__")
     # key is violation street_name and county 
     key = (d[1], d[2])
 
@@ -215,7 +223,6 @@ def mapToCenterLineData(record, cscl_data):
 
             # takes violation house number and odd_house and even_house as inputs
             # returns true or false if a match is made
-#             if(re.search(r'\d', d[0])):
             if(matchHouseNumber(d[0], house_range[1], house_range[2])):
 
                 physicalID = house_range[0]
@@ -224,7 +231,7 @@ def mapToCenterLineData(record, cscl_data):
 
                 new_key = physicalID + "-" + year
 
-                return (new_key, record[1])
+                return (new_key, int(record[1]))
             
 # input value as a nested tuple
 # returns list of flattened tuples
@@ -253,7 +260,7 @@ if __name__ == "__main__":
     output_location = sys.argv[1]
 
     violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/*.csv"
-    # violation_data_file_location = "./Data/2016.csv"
+    # violation_data_file_location = "./Data/data/*.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
     # cscl_data_location = "./Data/nyc_cscl.csv"
 

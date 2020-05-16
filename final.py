@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
     output_location = sys.argv[1]
 
-    violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/"
+    violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/*.csv"
     # violation_data_file_location = "./Data/2016.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
     # cscl_data_location = "./Data/nyc_cscl.csv"
@@ -265,7 +265,7 @@ if __name__ == "__main__":
     
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
-    rdd = sc.wholeTextFiles(violation_data_file_location)
+    rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \

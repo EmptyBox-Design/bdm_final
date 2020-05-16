@@ -3,17 +3,18 @@
 # strips out letters
 # returns None for no matches for only letters and --
 def getHouseNumber(hn):
-
-    import re
-
+    
     match = None
+    
+    import re
 
     def stripAZ(string):
         return re.sub('\D', '', string.strip())
     
     if(re.search(r'\d', hn)):
         try:
-            match = ("int",int(hn))
+            hn = int(hn)
+            match = ("int",hn)
         except ValueError:
 
             test_split = hn.split("-")
@@ -23,9 +24,7 @@ def getHouseNumber(hn):
                 match = ("int",int(hn))
 
             elif(len(test_split) == 2):
-
                 strip = (stripAZ(test_split[0]), stripAZ(test_split[1]))
-
                 if(len(strip[0]) > 0 and len(strip[1]) > 0):
                     match = ('compound', (int(strip[0]), int(strip[1])))
                 else:
@@ -35,7 +34,7 @@ def getHouseNumber(hn):
                         match = ("int",int(strip[1]))
         return match
     else:
-        return match
+        return None
 
 # converts violation county code abriveation to 
 # centerline code  1 - 5
@@ -90,8 +89,8 @@ def processViolations(pid, records):
 
                 violation_row = [house_number, street_name, county, year]
 
-                key = "__".join(violation_row)
-                # adds 1 to the key if the same violation on same street and house number exists
+                key = "_".join(violation_row)
+
                 counts[key] = counts.get(key, 0) +1
 
     return counts.items()
@@ -104,7 +103,7 @@ def matchHouseNumber(hn, odd_house, even_house):
     
     def compareHouseNumberAsInt(hn, c_low, c_high):
         try:
-            if(int(hn) >= int(c_low) and int(hn) <= int(c_high)):
+            if(hn >= int(c_low) and hn <= int(c_high)):
                 return True
             else:
                 return False
@@ -164,24 +163,15 @@ def matchHouseNumber(hn, odd_house, even_house):
 def readCenterLineDataRDD(pid, records):
 
     import csv
-    
-    # Skip the header
-    if pid==0:
+
+    if(pid == 0):
         next(records)
 
-    # reader
     reader = csv.reader(records)
-    
-    # container
-    data = {}
 
     for row in reader:
 
         boro = row[13]
-
-        full_street_key = (row[28].lower(), boro)
-
-        street_label_key = (row[10].lower(), boro)
 
         physicalID = row[0]
 
@@ -189,10 +179,12 @@ def readCenterLineDataRDD(pid, records):
 
         even_house = [row[4], row[5]]
         
-        data[full_street_key]  = [physicalID, odd_house, even_house]
-        data[street_label_key] = [physicalID, odd_house, even_house]
+        full_street_key = (row[28].lower(), boro)
 
-    return data.items()
+        street_label_key = (row[10].lower(), boro)
+
+        yield((full_street_key, street_label_key), (physicalID, odd_house, even_house))
+
 
 # writes data csv 
 # unpacks value tuples
@@ -204,29 +196,36 @@ def toCSVLine(data):
 # currently returns NONE if no match is made
 # which means that the given violation did not match a centerline
 def mapToCenterLineData(record, cscl_data):
-
+    
     import re
-
-    d = record[0].split("__")
+    
+    d = record[0].split("_")
     # key is violation street_name and county 
     key = (d[1], d[2])
 
     # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
-    if key in cscl_data:
+    if (key) in cscl_data:
 
-        physicalID = cscl_data[key][0]
+        # street matches need to check if any of the house numbers match
+        # 0 - physcicalID
+        # low
+        # high
+        for house_range in cscl_data[key]:
 
-        year = d[3]
+            # takes violation house number and odd_house and even_house as inputs
+            # returns true or false if a match is made
+#             if(re.search(r'\d', d[0])):
+            if(matchHouseNumber(d[0], house_range[1], house_range[2])):
 
-        new_key = physicalID + "-" + year
-        
-        # takes violation house number and odd_house and even_house as inputs
-        # returns true or false if a match is made
-        if(re.search(r'\d', d[0])):
-            if(matchHouseNumber(d[0], cscl_data[key][1], cscl_data[key][2])):
-                return (new_key, int(record[1]))
+                physicalID = house_range[0]
 
+                year = d[3]
+
+                new_key = physicalID + "-" + year
+
+                return (new_key, record[1])
+            
 # input value as a nested tuple
 # returns list of flattened tuples
 def unpackTupes(data):
@@ -254,27 +253,29 @@ if __name__ == "__main__":
     # violation_data_file_location = "./Data/2016.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
     # cscl_data_location = "./Data/nyc_cscl.csv"
+
+    cscl_data_read = sc.textFile(cscl_data_location)
+
+    cscl_data_map = cscl_data_read.mapPartitionsWithIndex(readCenterLineDataRDD) \
+        .flatMap(lambda x: ( ((x[0][0]), (x[1])),   ((x[0][1]), (x[1]))  )) \
+        .groupByKey() \
+        .collectAsMap()
+
+    print("length of cscl data",len(cscl_data_map.keys()))
     
-    cscl_read = sc.textFile(cscl_data_location)
-    
-    cscl_data = cscl_read.mapPartitionsWithIndex(readCenterLineDataRDD).collectAsMap()
+    cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
-    cscl_data_broadcast = sc.broadcast(cscl_data).value
-
-    print("length of cscl data",len(cscl_data.keys()))
-
-    rdd = sc.textFile(violation_data_file_location)
+    rdd = sc.wholeTextFiles(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
         .filter(lambda x: x is not None) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        .groupByKey() \
+        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        .mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
     print('done processing!')
-        # 
-        # .reduceByKey(lambda x,y: x+y) \
-        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        # .groupByKey() \
-        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        # .mapValues(lambda x: unpackTupes(x)) \

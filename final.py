@@ -201,7 +201,14 @@ def readCenterLineDataRDD(pid, records):
 # writes data csv 
 # unpacks value tuples
 def toCSVLine(data):
-    return ','.join(str(e) for e in data)
+    string = []
+    
+    for d in data:
+        if(type(d) is list):
+            string.append(','.join(str(e) for e in d))
+        else:
+            string.append(d)
+    return ','.join(str(e) for e in string )
 
 # violation example joined by
 # [house_number, street_name, county, year]

@@ -59,12 +59,14 @@ def getCounty(county):
     return str(match)
 
 def getYear(year):
+
     match = None
+
     try:
         match = year.split("/")[2]
     except IndexError:
         match = None
-    return str(match)
+    return match
 
 # return cleaned violations in tuple with the key being 
 def processViolations(pid, records):
@@ -96,8 +98,9 @@ def processViolations(pid, records):
 
                 key = "__".join(violation_row)
 
-                if(int(year) > 2015):
-                    counts[key] = counts.get(key, 0) +1
+                if(year is not None):
+                    if(int(year) > 2015):
+                        counts[key] = counts.get(key, 0) +1
 
     return counts.items()
 
@@ -213,7 +216,7 @@ def mapToCenterLineData(record, cscl_data):
 
     # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
-    if (key) in cscl_data:
+    if key in cscl_data:
 
         # street matches need to check if any of the house numbers match
         # 0 - physcicalID

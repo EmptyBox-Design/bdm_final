@@ -88,18 +88,19 @@ def processViolations(pid, records):
                 
                 year = getYear(row[4])
 
-                county = getCounty(row[21])
-
-                house_number = row[23]
-
-                street_name = row[24].lower()
-
-                violation_row = [house_number, street_name, county, year]
-
-                key = "__".join(violation_row)
-
                 if(year is not None):
                     if(int(year) > 2015):
+
+                        county = getCounty(row[21])
+
+                        house_number = row[23]
+
+                        street_name = row[24].lower()
+
+                        violation_row = [house_number, street_name, county, year]
+
+                        key = "__".join(violation_row)
+
                         counts[key] = counts.get(key, 0) +1
 
     return counts.items()

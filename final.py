@@ -90,7 +90,7 @@ def processViolations(pid, records):
                 year = getYear(row[4])
 
                 if(year is not None):
-                    if(int(year) > 2015):
+                    if(int(year) >= 2015):
 
                         county = getCounty(row[21])
 
@@ -102,7 +102,6 @@ def processViolations(pid, records):
 
                         key = "__".join(violation_row)
 
-                        # counts[key] = counts.get(key, 0) +1
                         yield (key, 1)
     # for record in records:
         

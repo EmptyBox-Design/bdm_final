@@ -230,9 +230,10 @@ def mapToCenterLineData(record, cscl_data):
     
     d = record[0].split("__")
     # key is violation street_name and county 
-    # (street_name, countyCode)
     key = (d[1], d[2])
 
+    match = None
+    
     # return((key), 0)
     # checks to see if violation street name matches fullstreet or st label in centerline data by key
     if key in cscl_data:
@@ -254,7 +255,11 @@ def mapToCenterLineData(record, cscl_data):
 
                 new_key = physicalID + "-" + year
 
-                yield (new_key, int(record[1]))
+                match = (new_key, int(record[1]))
+    else:
+        match = None
+
+    return match
 
 # input value as a nested tuple
 # returns list of flattened tuples

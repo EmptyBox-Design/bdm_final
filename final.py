@@ -279,10 +279,14 @@ def unpackTupes(data):
     for i in data:
         foo(*i)
 
-    j = list(years.values())
+    def convertToInts(test_list):
+        return [int(i) for i in test_list] 
+
+    j = convertToInts(list(years.values()))
+    k = convertToInts(list(years.keys()))
 
     X = np.array(j)
-    y = np.array(list(years.keys()))
+    y = np.array(k)
 
     # # Fit and make the predictions by the model
     model = sm.OLS(y, X).fit()
@@ -323,6 +327,7 @@ if __name__ == "__main__":
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .filter(lambda x: x[1] > 0) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

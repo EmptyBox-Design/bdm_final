@@ -71,7 +71,7 @@ def getYear(year):
 # return cleaned violations in tuple with the key being 
 def processViolations(pid, records):
     
-    counts = {}
+    # counts = {}
 
     if(pid == 0):
         next(records)
@@ -101,9 +101,10 @@ def processViolations(pid, records):
 
                         key = "__".join(violation_row)
 
-                        counts[key] = counts.get(key, 0) +1
+                        # counts[key] = counts.get(key, 0) +1
+                        yield (key, 0)
 
-    return counts.items()
+    # return counts.items()
 
 def matchHouseNumber(hn, odd_house, even_house):
     

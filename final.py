@@ -23,23 +23,12 @@ def getHouseNumber(hn):
 
             # split the house number
             test_split = hn.split("-")
+            
             # if the house number split only contains one value
             # treat it as an integer and strip 
             if(len(test_split) == 1):
-                if(len(hn.split(".")) == 2):
-                    s = hn.split(".")
-                    # remove all letters from the tuple
-                    strip = (stripAZ(s[0]), stripAZ(s[1]))
-                    if(len(strip[0]) > 0 and len(strip[1])):
-                        match = ('compound', (strip[0], strip[1]))
-                    elif(len(strip[0]) > 0):
-                        match = ('compound', (strip[0], 0))
-                    elif(len(strip[1]) > 0):
-                        match = ('compound', (0, strip[1]))
-                else:
-                    hn = stripAZ(hn)
-                    match = ("int",int(hn))
-
+                hn = stripAZ(hn)
+                match = ("int",int(hn))
             # if it is compound
             # strip out letters
             # test and return 

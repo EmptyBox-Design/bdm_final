@@ -243,7 +243,7 @@ def mapToCenterLineData(record, cscl_data):
                 new_key = physicalID + "-" + year
 
                 return (new_key, int(record[1]))
-            
+
 # input value as a nested tuple
 # returns list of flattened tuples
 def unpackTupes(data):
@@ -300,14 +300,16 @@ if __name__ == "__main__":
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .reduceByKey(lambda x,y: x+y) \
-        .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-        .filter(lambda x: x is not None) \
-        .reduceByKey(lambda x,y: x+y) \
-        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        .groupByKey() \
-        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        .mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
+        # .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        # .filter(lambda x: x is not None) \
+        # .reduceByKey(lambda x,y: x+y) \
+        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        # .groupByKey() \
+        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        # .mapValues(lambda x: unpackTupes(x)) \
+        # .map(toCSVLine) \
+        # .saveAsTextFile(output_location)
 
     print ("done processing!", time.time() - start_time, "to run")

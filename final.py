@@ -8,21 +8,30 @@ def getHouseNumber(hn):
     
     import re
 
+    # remove all alphabetical letters from string
     def stripAZ(string):
         return re.sub('\D', '', string.strip())
-    
+
+    # does the house number contain any digits
     if(re.search(r'\d', hn)):
+        # try to process it as an integer
         try:
             hn = int(hn)
             match = ("int",hn)
+        # if fail try to process as compound split by "-"
         except ValueError:
 
+            # split the house number
             test_split = hn.split("-")
             
+            # if the house number split only contains one value
+            # treat it as an integer and strip 
             if(len(test_split) == 1):
                 hn = stripAZ(hn)
                 match = ("int",int(hn))
-
+            # if it is compound
+            # strip out letters
+            # test and return 
             elif(len(test_split) == 2):
                 
                 # remove all letters from the tuple
@@ -71,7 +80,6 @@ def getYear(year):
 # return cleaned violations in tuple with the key being 
 def processViolations(pid, records):
     
-    # counts = {}
     import csv 
 
     if(pid == 0):
@@ -103,35 +111,7 @@ def processViolations(pid, records):
                         key = "__".join(violation_row)
 
                         yield (key, 1)
-    # for record in records:
-        
-    #     row = record.split(',')
-        
-    #     test_row = [row[4], row[21], row[23], row[24]]
-    #     #  checks if values are None
-    #     if(None not in test_row):
-    #         # checks if values are empty string or string with no data besides whitespace
-    #         if(all(len(i.strip()) > 0 for i in test_row)):
-                
-    #             year = getYear(row[4])
 
-    #             if(year is not None):
-    #                 if(int(year) > 2015):
-
-    #                     county = getCounty(row[21])
-
-    #                     house_number = row[23]
-
-    #                     street_name = row[24].lower()
-
-    #                     violation_row = [house_number, street_name, county, year]
-
-    #                     key = "__".join(violation_row)
-
-    #                     # counts[key] = counts.get(key, 0) +1
-    #                     yield (key, 1)
-
-    # return counts.items()
 
 def matchHouseNumber(hn, odd_house, even_house):
     
@@ -188,7 +168,7 @@ def matchHouseNumber(hn, odd_house, even_house):
                 
         # violation house number is compound
         elif(house_type == 'compound'):
-            if((int(hn[1]) %2) == 0):
+            if((int(hn[1]) % 2) == 0):
                 match = compareTupes(hn, even_house[0], even_house[1])
             else:
                 match = compareTupes(hn, odd_house[0], odd_house[1])
@@ -327,16 +307,13 @@ if __name__ == "__main__":
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
-        .map(toCSVLine) \
+        .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .filter(lambda x: x is not None) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        .groupByKey() \
+        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        .mapValues(lambda x: unpackTupes(x)) \
         .saveAsTextFile(output_location)
-        # .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-        # .filter(lambda x: x is not None) \
-        # .reduceByKey(lambda x,y: x+y) \
-        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        # .groupByKey() \
-        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        # .mapValues(lambda x: unpackTupes(x)) \
-        # .map(toCSVLine) \
-        # .saveAsTextFile(output_location)
 
     print ("done processing!", time.time() - start_time, "to run")

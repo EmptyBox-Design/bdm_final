@@ -46,6 +46,33 @@ def getHouseNumber(hn):
                         match = ("int",int(strip[0]))
                     elif(len(strip[1]) > 0):
                         match = ("int",int(strip[1]))
+            elif(match is None):
+                # split the house number
+                test_split = hn.split("--")
+
+                # if the house number split only contains one value
+                # treat it as an integer and strip 
+                if(len(test_split) == 1):
+                    hn = stripAZ(hn)
+                    match = ("int",int(hn))
+                # if it is compound
+                # strip out letters
+                # test and return 
+                elif(len(test_split) == 2):
+
+                    # remove all letters from the tuple
+                    strip = (stripAZ(test_split[0]), stripAZ(test_split[1]))
+
+                    if(len(strip[0]) > 0 and len(strip[1]) > 0):
+                        match = ('compound', (strip[0], strip[1]))
+                    else:
+                        # this tests whethere the tuple has only one number on either side of the -
+                        # return only that number
+                        if(len(strip[0]) > 0):
+                            match = ("int",int(strip[0]))
+                        elif(len(strip[1]) > 0):
+                            match = ("int",int(strip[1]))
+
         return match
     else:
         return None
@@ -266,7 +293,6 @@ def mapToCenterLineData(record, cscl_data):
 def unpackTupes(data):
 
     import statsmodels.api as sm
-    import numpy as np
 
     years = {
         "2015":0,
@@ -286,17 +312,21 @@ def unpackTupes(data):
     def convertToInts(test_list):
         return [int(i) for i in test_list] 
 
-    X = np.array(convertToInts(list(years.values())))
-    y = np.array(convertToInts(list(years.keys())))
+    Y = convertToInts(list(years.values()))
 
-    # # Fit and make the predictions by the model
-    model = sm.OLS(y, X).fit()
-    # predictions = model.predict(X)
+    X = convertToInts(list(years.keys()))
 
-    years_ols = model.params[0]
+    X = sm.add_constant(X)
+
+    model = sm.OLS(Y,X)
+
+    results = model.fit()
+
+    year_ols = results.params[1]
 
     j = list(years.values())
-    j.append(years_ols)
+
+    j.append(year_ols)
 
     return j
 
@@ -342,4 +372,4 @@ if __name__ == "__main__":
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
-    print ("done processing!", time.time() - start_time, "to run")
+    print ("done processing!", ((time.time() - start_time) / 60), " minutes to run")

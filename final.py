@@ -331,6 +331,21 @@ def unpackTupes(data):
 
     return j
 
+def keyGen(pid, records):
+    
+    import csv
+
+    if(pid == 0):
+        next(records)
+
+    reader = csv.reader(records)
+
+    for row in reader:
+
+        physicalID = row[0]
+
+        yield(physicalID, 0)
+
 if __name__ == "__main__":
 
     import time

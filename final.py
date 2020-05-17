@@ -306,8 +306,9 @@ def unpackTupes(data):
         if a in years:
             years[a] = b
 
-    for i in data:
-        foo(*i)
+    if(data[1] is not None):
+        for i in data[1]:
+            foo(*i)
 
     def convertToInts(test_list):
         return [int(i) for i in test_list] 
@@ -358,6 +359,9 @@ if __name__ == "__main__":
     
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
+    cscl_keys = cscl_data_read.mapPartitionsWithIndex(keyGen) \
+        .reduceByKey(lambda x,y: x+y)
+
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
@@ -368,9 +372,16 @@ if __name__ == "__main__":
         .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
         .groupByKey() \
         .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        .mapValues(lambda x: unpackTupes(x)) \
+        
+    joined = cscl_keys.leftOuterJoin(counts)
+
+    joined.mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
+
+        # .mapValues(lambda x: unpackTupes(x)) \
+        # .map(toCSVLine) \
+        # .saveAsTextFile(output_location)
 
 
     print ("done processing!", ((time.time() - start_time) / 60), " minutes to run")

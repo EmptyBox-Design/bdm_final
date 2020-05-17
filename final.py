@@ -30,7 +30,7 @@ def getHouseNumber(hn):
                     s = hn.split(".")
                     # remove all letters from the tuple
                     strip = (stripAZ(s[0]), stripAZ(s[1])) 
-                    match = ('compound', (strip[0], strip[1]))
+                    # match = ('compound', (strip[0], strip[1]))
                 else:
                     hn = stripAZ(hn)
                     match = ("int",int(hn))
@@ -72,7 +72,8 @@ def getHouseNumber(hn):
                     if(len(strip[0]) > 0 and len(strip[1]) > 0):
                         match = ('compound', (strip[0], strip[1]))
                     else:
-                        # this tests whethere the tuple has only one number on either side of the -
+                        # this tests whethere the tuple has only one number on either side of 
+                        # the -
                         # return only that number
                         if(len(strip[0]) > 0):
                             match = ("int",int(strip[0]))

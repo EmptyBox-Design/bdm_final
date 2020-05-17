@@ -248,15 +248,25 @@ def mapToCenterLineData(record, cscl_data):
 # returns list of flattened tuples
 def unpackTupes(data):
     j = []
-    
+    # (2015, 1)
+    years = {
+        "2015":",",
+        "2016" :",",
+        "2017": ",",
+        "2018": ",",
+        "2019": ","
+    }
+
     def foo(a, b=None):
-        j.append(a)
-        j.append(b)
+        if a in years:
+            years[a] = b
+        # j.append(a)
+        # j.append(b)
 
     for i in data:
         foo(*i)
 
-    return j
+    return years.values()
 
 if __name__ == "__main__":
 

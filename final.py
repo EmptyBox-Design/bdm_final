@@ -326,7 +326,7 @@ def unpackTupes(data):
 
     j = list(years.values())
 
-    # j.append(year_ols)
+    j.append(year_ols)
 
     return j
 
@@ -367,12 +367,12 @@ if __name__ == "__main__":
         .reduceByKey(lambda x,y: x+y) \
         .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
         .groupByKey() \
-        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        .sortByKey() \
+        .mapValues(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
         .mapValues(lambda x: unpackTupes(x)) \
+        .sortByKey() \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
     
-
+    
 
     print ("done processing!", ((time.time() - start_time) / 60), " minutes to run")

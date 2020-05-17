@@ -391,6 +391,7 @@ if __name__ == "__main__":
     joined = cscl_keys.leftOuterJoin(counts)
 
     joined.mapValues(lambda x: unpackTupes(x)) \
+        .sortByKey() \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

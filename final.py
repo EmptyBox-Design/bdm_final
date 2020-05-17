@@ -240,22 +240,20 @@ def mapToCenterLineData(record, cscl_data):
         # 0 - physcicalID
         # low
         # high
-        return (key, int(record[1]))
-        # for house_range in cscl_data[key]:
+        for house_range in cscl_data[key]:
 
-        #     # takes violation house number and odd_house and even_house as inputs
-        #     # returns true or false if a match is made
-        #     if(matchHouseNumber(d[0], house_range[1], house_range[2])):
+            # takes violation house number and odd_house and even_house as inputs
+            # returns true or false if a match is made
+            # violation house number, odd_house, even_house
+            if(matchHouseNumber(d[0], house_range[1], house_range[2])):
 
-        #         physicalID = house_range[0]
+                physicalID = house_range[0]
 
-        #         year = d[3]
+                year = d[3]
 
-        #         new_key = physicalID + "-" + year
+                new_key = physicalID + "-" + year
 
-        #         return (new_key, int(record[1]))
-    else:
-        return (key, 0)
+                return (new_key, int(record[1]))
 
 # input value as a nested tuple
 # returns list of flattened tuples
@@ -319,22 +317,27 @@ if __name__ == "__main__":
         .groupByKey() \
         .collectAsMap()
 
-    print("created cscl dictionary",len(cscl_data_map.keys()))
+    i = 0
+    for j in cscl_data_map.keys():
+        for k in cscl_data_map[j]:
+            i+=1
+    print(i)
+    # print("created cscl dictionary",len(cscl_data_map.keys()))
     
-    cscl_data_broadcast = sc.broadcast(cscl_data_map).value
+    # cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
-    rdd = sc.textFile(violation_data_file_location)
+    # rdd = sc.textFile(violation_data_file_location)
     
-    counts = rdd.mapPartitionsWithIndex(processViolations) \
-        .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-        .filter(lambda x: x[1] > 0) \
-        .map(toCSVLine) \
-        .saveAsTextFile(output_location)
+    # counts = rdd.mapPartitionsWithIndex(processViolations) \
+    #     .reduceByKey(lambda x,y: x+y) \
+    #     .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+    #     .filter(lambda x: x is not None) \
+    #     .reduceByKey(lambda x,y: x+y) \
+    #     .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+    #     .groupByKey() \
+    #     .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+    #     .mapValues(lambda x: unpackTupes(x)) \
+    #     .map(toCSVLine) \
+    #     .saveAsTextFile(output_location)
 
-        # .filter(lambda x: x is not None) \
-        # .reduceByKey(lambda x,y: x+y) \
-        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        # .groupByKey() \
-        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        # .mapValues(lambda x: unpackTupes(x)) \
     print ("done processing!", time.time() - start_time, "to run")

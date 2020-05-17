@@ -144,7 +144,7 @@ def matchHouseNumber(hn, odd_house, even_house):
     
     match = False
     
-    checkHouseNumber = getHouseNumber(hn)
+    checkHouseNumber = getHouseNumber(str(hn))
     
     def compareHouseNumberAsInt(hn, c_low, c_high):
         try:

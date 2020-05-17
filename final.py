@@ -72,16 +72,17 @@ def getYear(year):
 def processViolations(pid, records):
     
     # counts = {}
+    import csv 
 
     if(pid == 0):
         next(records)
-        
-    for record in records:
-        
-        row = record.split(',')
-        
+    
+    reader = csv.reader(records)
+
+    for row in reader:
+
         test_row = [row[4], row[21], row[23], row[24]]
-        #  checks if values are None
+
         if(None not in test_row):
             # checks if values are empty string or string with no data besides whitespace
             if(all(len(i.strip()) > 0 for i in test_row)):
@@ -102,7 +103,34 @@ def processViolations(pid, records):
                         key = "__".join(violation_row)
 
                         # counts[key] = counts.get(key, 0) +1
-                        yield (key, 0)
+                        yield (key, 1)
+    # for record in records:
+        
+    #     row = record.split(',')
+        
+    #     test_row = [row[4], row[21], row[23], row[24]]
+    #     #  checks if values are None
+    #     if(None not in test_row):
+    #         # checks if values are empty string or string with no data besides whitespace
+    #         if(all(len(i.strip()) > 0 for i in test_row)):
+                
+    #             year = getYear(row[4])
+
+    #             if(year is not None):
+    #                 if(int(year) > 2015):
+
+    #                     county = getCounty(row[21])
+
+    #                     house_number = row[23]
+
+    #                     street_name = row[24].lower()
+
+    #                     violation_row = [house_number, street_name, county, year]
+
+    #                     key = "__".join(violation_row)
+
+    #                     # counts[key] = counts.get(key, 0) +1
+    #                     yield (key, 1)
 
     # return counts.items()
 
@@ -201,16 +229,17 @@ def readCenterLineDataRDD(pid, records):
 
 # writes data csv 
 # unpacks value tuples
-def toCSVLine(data):
-    string = []
+# def toCSVLine(data):
+#     string = []
     
-    for d in data:
-        if(type(d) is list):
-            string.append(','.join(str(e) for e in d))
-        else:
-            string.append(d)
-    return ','.join(str(e) for e in string )
-
+#     for d in data:
+#         if(type(d) is list):
+#             string.append(','.join(str(e) for e in d))
+#         else:
+#             string.append(d)
+#     return ','.join(str(e) for e in string )
+def toCSVLine(data):
+  return ','.join(str(d) for d in data)
 # violation example joined by
 # [house_number, street_name, county, year]
 # currently returns NONE if no match is made
@@ -250,24 +279,23 @@ def mapToCenterLineData(record, cscl_data):
 def unpackTupes(data):
 
     years = {
-        "2015":",",
-        "2016" :",",
-        "2017": ",",
-        "2018": ",",
-        "2019": ","
+        "2015":0,
+        "2016" :0,
+        "2017": 0,
+        "2018": 0,
+        "2019": 0
     }
 
     def foo(a, b=None):
         if a in years:
             years[a] = b
-        # j.append(a)
-        # j.append(b)
 
     for i in data:
         foo(*i)
 
     j = list(years.values())
-    return j
+
+    return ','.join(str(e) for e in j )
 
 if __name__ == "__main__":
 
@@ -300,8 +328,6 @@ if __name__ == "__main__":
     rdd = sc.textFile(violation_data_file_location)
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
-        .reduceByKey(lambda x,y: x+y) \
-        .sortBy(lambda x: x[1])  \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
         # .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \

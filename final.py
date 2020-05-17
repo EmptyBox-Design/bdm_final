@@ -375,7 +375,8 @@ if __name__ == "__main__":
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
     cscl_keys = cscl_data_read.mapPartitionsWithIndex(keyGen) \
-        .reduceByKey(lambda x,y: x+y)
+        .reduceByKey(lambda x,y: x+y) \
+        .sortByKey()
 
     rdd = sc.textFile(violation_data_file_location)
     
@@ -391,7 +392,6 @@ if __name__ == "__main__":
     joined = cscl_keys.leftOuterJoin(counts)
 
     joined.mapValues(lambda x: unpackTupes(x)) \
-        .sortByKey() \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 

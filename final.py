@@ -175,7 +175,7 @@ def matchHouseNumber(hn, odd_house, even_house):
             b = (int(b[0]), int(b[1]))
 
             z = test.split("-")
-            z = (int(b[0]), int(b[1]))
+            z = (int(z[0]), int(z[1]))
 
             if(z >= a and z <= b):
                 return True

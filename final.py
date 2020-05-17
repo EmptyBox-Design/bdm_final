@@ -104,7 +104,7 @@ def processViolations(pid, records):
 
                         house_number = row[23]
 
-                        street_name = row[24].lower()
+                        street_name = row[24].upper()
 
                         violation_row = [house_number, street_name, county, year]
 
@@ -199,9 +199,9 @@ def readCenterLineDataRDD(pid, records):
 
         even_house = [row[4], row[5]]
         
-        full_street_key = (row[28].lower(), boro)
+        full_street_key = (row[28].upper(), boro)
 
-        street_label_key = (row[10].lower(), boro)
+        street_label_key = (row[10].upper(), boro)
 
         yield((full_street_key, street_label_key), (physicalID, odd_house, even_house))
 
@@ -282,17 +282,17 @@ def unpackTupes(data):
     def convertToInts(test_list):
         return [int(i) for i in test_list] 
 
-    j = convertToInts(list(years.values()))
-    k = convertToInts(list(years.keys()))
-
-    X = np.array(j)
-    y = np.array(k)
+    X = np.array(convertToInts(list(years.values())))
+    y = np.array(convertToInts(list(years.keys())))
 
     # # Fit and make the predictions by the model
     model = sm.OLS(y, X).fit()
     predictions = model.predict(X)
 
     years["OLS"] = model.params[0]
+
+    j = list(years.values())
+
     return j
 
 if __name__ == "__main__":

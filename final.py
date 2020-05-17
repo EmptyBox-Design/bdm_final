@@ -13,7 +13,7 @@ def getHouseNumber(hn):
         return re.sub('\D', '', string.strip())
 
     # does the house number contain any digits
-    if(re.search(r'\d', hn)):
+    if(re.search(r'\d', hn) and len(hn) > 0):
         # try to process it as an integer
         try:
             hn = int(hn)

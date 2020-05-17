@@ -23,12 +23,17 @@ def getHouseNumber(hn):
 
             # split the house number
             test_split = hn.split("-")
-            
             # if the house number split only contains one value
             # treat it as an integer and strip 
             if(len(test_split) == 1):
-                hn = stripAZ(hn)
-                match = ("int",int(hn))
+                try:
+                    h = float(hn)
+                    s = hn.split(".")
+                    match = ('compound', (s[0], s[1]))
+                except ValueError:
+                    
+                    hn = stripAZ(hn)
+                    match = ("int",int(hn))
             # if it is compound
             # strip out letters
             # test and return 

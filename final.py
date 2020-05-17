@@ -240,19 +240,22 @@ def mapToCenterLineData(record, cscl_data):
         # 0 - physcicalID
         # low
         # high
-        for house_range in cscl_data[key]:
+        return (key, int(record[1]))
+        # for house_range in cscl_data[key]:
 
-            # takes violation house number and odd_house and even_house as inputs
-            # returns true or false if a match is made
-            if(matchHouseNumber(d[0], house_range[1], house_range[2])):
+        #     # takes violation house number and odd_house and even_house as inputs
+        #     # returns true or false if a match is made
+        #     if(matchHouseNumber(d[0], house_range[1], house_range[2])):
 
-                physicalID = house_range[0]
+        #         physicalID = house_range[0]
 
-                year = d[3]
+        #         year = d[3]
 
-                new_key = physicalID + "-" + year
+        #         new_key = physicalID + "-" + year
 
-                return (new_key, int(record[1]))
+        #         return (new_key, int(record[1]))
+    else:
+        return (key, 0)
 
 # input value as a nested tuple
 # returns list of flattened tuples
@@ -260,7 +263,7 @@ def unpackTupes(data):
 
     import statsmodels.api as sm
     import numpy as np
-    
+
     years = {
         "2015":0,
         "2016" :0,

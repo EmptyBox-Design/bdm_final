@@ -208,17 +208,18 @@ def readCenterLineDataRDD(pid, records):
 
 # writes data csv 
 # unpacks value tuples
-# def toCSVLine(data):
-#     string = []
-    
-#     for d in data:
-#         if(type(d) is list):
-#             string.append(','.join(str(e) for e in d))
-#         else:
-#             string.append(d)
-#     return ','.join(str(e) for e in string )
 def toCSVLine(data):
-  return ','.join(str(d) for d in data)
+    string = []
+    
+    for d in data:
+        if(type(d) is list):
+            string.append(','.join(str(e) for e in d))
+        else:
+            string.append(d)
+    return ','.join(str(e) for e in string )
+
+# def toCSVLine(data):
+#   return ','.join(str(d) for d in data)
 # violation example joined by
 # [house_number, street_name, county, year]
 # currently returns NONE if no match is made
@@ -257,6 +258,9 @@ def mapToCenterLineData(record, cscl_data):
 # returns list of flattened tuples
 def unpackTupes(data):
 
+    import statsmodels.api as sm
+    import numpy as np
+    
     years = {
         "2015":0,
         "2016" :0,
@@ -274,7 +278,7 @@ def unpackTupes(data):
 
     j = list(years.values())
 
-    return ','.join(str(e) for e in j )
+    return j
 
 if __name__ == "__main__":
 
@@ -314,6 +318,7 @@ if __name__ == "__main__":
         .groupByKey() \
         .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
         .mapValues(lambda x: unpackTupes(x)) \
+        .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
     print ("done processing!", time.time() - start_time, "to run")

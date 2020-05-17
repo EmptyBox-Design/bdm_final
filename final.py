@@ -322,7 +322,7 @@ if __name__ == "__main__":
         for k in cscl_data_map[j]:
             i+=1
     print(i)
-    # print("created cscl dictionary",len(cscl_data_map.keys()))
+    print("created cscl dictionary",len(cscl_data_map.keys()))
     
     # cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 

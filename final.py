@@ -208,18 +208,18 @@ def readCenterLineDataRDD(pid, records):
 
 # writes data csv 
 # unpacks value tuples
-def toCSVLine(data):
-    string = []
-    
-    for d in data:
-        if(type(d) is list):
-            string.append(','.join(str(e) for e in d))
-        else:
-            string.append(d)
-    return ','.join(str(e) for e in string )
-
 # def toCSVLine(data):
-#   return ','.join(str(d) for d in data)
+#     string = []
+    
+#     for d in data:
+#         if(type(d) is list):
+#             string.append(','.join(str(e) for e in d))
+#         else:
+#             string.append(d)
+#     return ','.join(str(e) for e in string )
+
+def toCSVLine(data):
+  return ','.join(str(d) for d in data)
 # violation example joined by
 # [house_number, street_name, county, year]
 # currently returns NONE if no match is made
@@ -281,6 +281,14 @@ def unpackTupes(data):
 
     j = list(years.values())
 
+    X = np.array(j)
+    y = np.array(list(years.keys()))
+
+    # # Fit and make the predictions by the model
+    model = sm.OLS(y, X).fit()
+    predictions = model.predict(X)
+
+    years["OLS"] = model.params[0]
     return j
 
 if __name__ == "__main__":
@@ -315,13 +323,13 @@ if __name__ == "__main__":
     
     counts = rdd.mapPartitionsWithIndex(processViolations) \
         .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-        .filter(lambda x: x is not None) \
-        .reduceByKey(lambda x,y: x+y) \
-        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-        .groupByKey() \
-        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-        .mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
 
+        # .filter(lambda x: x is not None) \
+        # .reduceByKey(lambda x,y: x+y) \
+        # .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        # .groupByKey() \
+        # .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        # .mapValues(lambda x: unpackTupes(x)) \
     print ("done processing!", time.time() - start_time, "to run")

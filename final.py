@@ -232,34 +232,35 @@ def mapToCenterLineData(record, cscl_data):
     # key is violation street_name and county 
     key = (d[1], d[2])
 
-    match = None
+    return (key)
+    # match = None
     
-    # return((key), 0)
-    # checks to see if violation street name matches fullstreet or st label in centerline data by key
-    if key in cscl_data:
+    # # return((key), 0)
+    # # checks to see if violation street name matches fullstreet or st label in centerline data by key
+    # if key in cscl_data:
 
-        # street matches need to check if any of the house numbers match
-        # 0 - physcicalID
-        # low
-        # high
-        for house_range in cscl_data[key]:
+    #     # street matches need to check if any of the house numbers match
+    #     # 0 - physcicalID
+    #     # low
+    #     # high
+    #     for house_range in cscl_data[key]:
 
-            # takes violation house number and odd_house and even_house as inputs
-            # returns true or false if a match is made
-            # violation house number, odd_house, even_house
-            if(matchHouseNumber(d[0], house_range[1], house_range[2])):
+    #         # takes violation house number and odd_house and even_house as inputs
+    #         # returns true or false if a match is made
+    #         # violation house number, odd_house, even_house
+    #         if(matchHouseNumber(d[0], house_range[1], house_range[2])):
 
-                physicalID = house_range[0]
+    #             physicalID = house_range[0]
 
-                year = d[3]
+    #             year = d[3]
 
-                new_key = physicalID + "-" + year
+    #             new_key = physicalID + "-" + year
 
-                match = (new_key, int(record[1]))
-    else:
-        match = None
+    #             match = (new_key, int(record[1]))
+    # else:
+    #     match = None
 
-    return match
+    # return match
 
 # input value as a nested tuple
 # returns list of flattened tuples

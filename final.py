@@ -13,7 +13,7 @@ def getHouseNumber(hn):
         return re.sub('\D', '', string.strip())
 
     # does the house number contain any digits
-    if(re.search(r'\d', hn) and len(hn) > 0):
+    if(re.search(r'\d', hn)):
         # try to process it as an integer
         try:
             hn = int(hn)
@@ -32,6 +32,9 @@ def getHouseNumber(hn):
                     match = ('compound', (s[0], s[1]))
                 except ValueError:
                     
+                    hn = stripAZ(hn)
+                    match = ("int",int(hn))
+                except IndexError:
                     hn = stripAZ(hn)
                     match = ("int",int(hn))
             # if it is compound

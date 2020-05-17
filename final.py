@@ -230,6 +230,7 @@ def mapToCenterLineData(record, cscl_data):
     
     d = record[0].split("__")
     # key is violation street_name and county 
+    # (street_name, countyCode)
     key = (d[1], d[2])
 
     # return((key), 0)
@@ -253,7 +254,7 @@ def mapToCenterLineData(record, cscl_data):
 
                 new_key = physicalID + "-" + year
 
-                return (new_key, int(record[1]))
+                yield (new_key, int(record[1]))
 
 # input value as a nested tuple
 # returns list of flattened tuples
@@ -285,11 +286,12 @@ def unpackTupes(data):
 
     # # Fit and make the predictions by the model
     model = sm.OLS(y, X).fit()
-    predictions = model.predict(X)
+    # predictions = model.predict(X)
 
-    years["OLS"] = model.params[0]
+    years_ols = model.params[0]
 
     j = list(years.values())
+    j.append(years_ols)
 
     return j
 
@@ -317,27 +319,22 @@ if __name__ == "__main__":
         .groupByKey() \
         .collectAsMap()
 
-    i = 0
-    for j in cscl_data_map.keys():
-        for k in cscl_data_map[j]:
-            i+=1
-    print(i)
     print("created cscl dictionary",len(cscl_data_map.keys()))
     
-    # cscl_data_broadcast = sc.broadcast(cscl_data_map).value
+    cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
-    # rdd = sc.textFile(violation_data_file_location)
+    rdd = sc.textFile(violation_data_file_location)
     
-    # counts = rdd.mapPartitionsWithIndex(processViolations) \
-    #     .reduceByKey(lambda x,y: x+y) \
-    #     .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
-    #     .filter(lambda x: x is not None) \
-    #     .reduceByKey(lambda x,y: x+y) \
-    #     .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
-    #     .groupByKey() \
-    #     .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
-    #     .mapValues(lambda x: unpackTupes(x)) \
-    #     .map(toCSVLine) \
-    #     .saveAsTextFile(output_location)
+    counts = rdd.mapPartitionsWithIndex(processViolations) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda data: mapToCenterLineData(data, cscl_data_broadcast)) \
+        .filter(lambda x: x is not None) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda x: (x[0].split("-")[0], (x[0].split("-")[1], x[1]))) \
+        .groupByKey() \
+        .map(lambda x: (x[0], sorted(x[1], key=lambda z: z[0], reverse=False))) \
+        .mapValues(lambda x: unpackTupes(x)) \
+        .map(toCSVLine) \
+        .saveAsTextFile(output_location)
 
     print ("done processing!", time.time() - start_time, "to run")

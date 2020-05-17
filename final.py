@@ -266,7 +266,7 @@ def unpackTupes(data):
     for i in data:
         foo(*i)
 
-    return years.values()
+    return list(years.values())
 
 if __name__ == "__main__":
 

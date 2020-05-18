@@ -209,6 +209,8 @@ def matchHouseNumber(hn, odd_house, even_house):
                         return True
                     else:
                         return False
+                except TypeError:
+                    return False
 
     if(checkHouseNumber is not None):
         # violation house number is an integer

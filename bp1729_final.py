@@ -183,13 +183,16 @@ def matchHouseNumber(hn, odd_house, even_house):
                 else:
                     return False
             except IndexError:
-                z = int(test[0])
-
-                try:
-                  if(z >= int(low) and z <= int(high)):
-                    return True
-                except TypeError:
-                    return False
+              return True
+                # z = int(test[0])
+                # x = int(test[1])
+                # try:
+                #   if(z >= int(low) and z <= int(high)):
+                #     return True
+                #   if(x >= int(low) and x <= int(high)):
+                #     return True
+                # except TypeError:
+                #     return False
 
 
     if(checkHouseNumber is not None):

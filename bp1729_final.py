@@ -183,34 +183,14 @@ def matchHouseNumber(hn, odd_house, even_house):
                 else:
                     return False
             except IndexError:
-                # return True
-                hn = 0
+                z = int(test[0])
+
                 try:
-                    hn = int(test)
-                    if(hn >= int(low) and hn <= int(high)):
-                        return True
-                    else:
-                        return False
-                except ValueError:
+                  if(z >= int(a) and z <= int(b)):
+                    return True
+                except TypeError:
                     return False
-                #     a = str(float(low)).split(".")
-                #     a = int(str(a[0]) + str(a[1]))
 
-                #     b = str(float(high)).split(".")
-                #     b = int(str(b[0]) + str(b[1]))
-
-                #     z = 0
-                #     if(type(test) == int):
-                #         z = test
-                #     else:
-                #         z = int(str(test[0]) + str(test[1]))
-
-                #     if(z >= a and z <= b):
-                #         return True
-                #     else:
-                #         return False
-                # except TypeError:
-                #     return False
 
     if(checkHouseNumber is not None):
         # violation house number is an integer

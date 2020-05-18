@@ -186,7 +186,7 @@ def matchHouseNumber(hn, odd_house, even_house):
                 z = int(test[0])
 
                 try:
-                  if(z >= int(a) and z <= int(b)):
+                  if(z >= int(low) and z <= int(high)):
                     return True
                 except TypeError:
                     return False

@@ -147,13 +147,16 @@ def matchHouseNumber(hn, odd_house, even_house):
     checkHouseNumber = getHouseNumber(str(hn))
     
     def compareHouseNumberAsInt(hn, c_low, c_high):
+        match = False
         try:
             if(hn >= int(c_low) and hn <= int(c_high)):
-                return True
+                match =  True
             else:
-                return False
+                match = compareTupes(hn, c_low, c_high)
         except ValueError:
-            return False
+            match = compareTupes(hn, c_low, c_high)
+
+        return match
 
     # compares a given violation compound house number
     # with compound centerline datapoints
@@ -161,21 +164,21 @@ def matchHouseNumber(hn, odd_house, even_house):
     def compareTupes(test,low,high):
         try:
 
-            # a = low.split("-")
-            # a = int(str(a[0]) + str(a[1]))
-
-            # b = high.split("-")
-            # b = int(str(b[0]) + str(b[1]))
-
-            # z = int(str(test[0]) + str(test[1]))
             a = low.split("-")
-            a = (int(a[0]), int(a[1]))
+            a = int(str(a[0]) + str(a[1]))
 
             b = high.split("-")
-            b = (int(b[0]), int(b[1]))
+            b = int(str(b[0]) + str(b[1]))
 
-            z = test.split("-")
-            z = (int(z[0]), int(z[1]))
+            z = int(str(test[0]) + str(test[1]))
+            # a = low.split("-")
+            # a = (int(a[0]), int(a[1]))
+
+            # b = high.split("-")
+            # b = (int(b[0]), int(b[1]))
+
+            # z = test.split("-")
+            # z = (int(z[0]), int(z[1]))
 
             if(z >= a and z <= b):
                 return True

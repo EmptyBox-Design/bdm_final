@@ -170,7 +170,11 @@ def matchHouseNumber(hn, odd_house, even_house):
             b = high.split("-")
             b = int(str(b[0]) + str(b[1]))
 
-            z = int(str(test[0]) + str(test[1]))
+            z = 0
+            if(type(test) == int):
+                z = test
+            else:
+                z = int(str(test[0]) + str(test[1]))
             # a = low.split("-")
             # a = (int(a[0]), int(a[1]))
 

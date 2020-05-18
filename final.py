@@ -183,7 +183,7 @@ def matchHouseNumber(hn, odd_house, even_house):
         except IndexError:
             return False
         except AttributeError:
-            return False
+            return True
         
     if(checkHouseNumber is not None):
         # violation house number is an integer

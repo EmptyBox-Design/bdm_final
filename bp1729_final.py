@@ -164,36 +164,27 @@ def matchHouseNumber(hn, odd_house, even_house):
     def compareTupes(test,low,high):
 
         # input cscl data is compound
-        if(len(low.strip() ) > 0 and len(high.strip()) >0):
-            try:
-                a = low.split("-")
-                a = int(str(a[0]) + str(a[1]))
+        try:
+            a = low.split("-")
+            a = int(str(a[0]) + str(a[1]))
 
-                b = high.split("-")
-                b = int(str(b[0]) + str(b[1]))
+            b = high.split("-")
+            b = int(str(b[0]) + str(b[1]))
 
-                z = 0
-                if(type(test) == int):
-                    z = test
-                else:
-                    z = int(str(test[0]) + str(test[1]))
+            z = 0
+            if(type(test) == int):
+                z = test
+            else:
+                z = int(str(test[0]) + str(test[1]))
 
-                if(z >= a and z <= b):
-                    return True
-                else:
-                    return False
-            except IndexError:
-              return True
-                # z = int(test[0])
-                # x = int(test[1])
-                # try:
-                #   if(z >= int(low) and z <= int(high)):
-                #     return True
-                #   if(x >= int(low) and x <= int(high)):
-                #     return True
-                # except TypeError:
-                #     return False
-
+            if(z >= a and z <= b):
+                return True
+            else:
+                return False
+        except IndexError:
+          # I believe this is where I am losign results. Not sure how to think of comparing
+          # compound address with integer streets - if that is even possible?
+          return False
 
     if(checkHouseNumber is not None):
         # violation house number is an integer
@@ -375,9 +366,7 @@ if __name__ == "__main__":
     output_location = sys.argv[1]
 
     violation_data_file_location = "hdfs:///tmp/bdm/nyc_parking_violation/*.csv"
-    # violation_data_file_location = "./Data/data/*.csv"
     cscl_data_location = "hdfs:///tmp/bdm/nyc_cscl.csv"
-    # cscl_data_location = "./Data/nyc_cscl.csv"
 
     cscl_data_read = sc.textFile(cscl_data_location)
 
@@ -386,8 +375,6 @@ if __name__ == "__main__":
         .groupByKey() \
         .collectAsMap()
 
-    # print("created cscl dictionary",len(cscl_data_map.keys()))
-    
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 
     cscl_keys = cscl_data_read.mapPartitionsWithIndex(keyGen) \

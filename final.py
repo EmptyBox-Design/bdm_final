@@ -163,6 +163,7 @@ def matchHouseNumber(hn, odd_house, even_house):
     # returns true or false if a match is made
     def compareTupes(test,low,high):
 
+        # input cscl data is compound
         try:
             a = low.split("-")
             a = int(str(a[0]) + str(a[1]))
@@ -181,28 +182,32 @@ def matchHouseNumber(hn, odd_house, even_house):
             else:
                 return False
         except IndexError:
-            return True
-            # a = low.split("-")
-            # b = high.split("-")
+            # return True
+            hn = 0
+            try:
+                hn = int(test)
+                if(hn >= int(low) and hn <= int(high)):
+                    return True
+                else:
+                    return False
+            except ValueError:
+                a = float(low).split(".")
+                a = int(str(a[0]) + str(a[1]))
 
-            # if(len(a) == 1):
-            #     a = int(str(a[0]) + str(0))
-            
-            # if(len(b) == 1):
-            #     b = int(str(b[0]) + str(0))
+                b = float(high).split(".")
+                b = int(str(b[0]) + str(b[1]))
+                
+                z = 0
+                if(type(test) == int):
+                    z = test
+                else:
+                    z = int(str(test[0]) + str(test[1]))
 
-            # z = 0
-            # if(type(test) == int):
-            #     z = test
-            # else:
-            #     z = int(str(test[0]) + str(test[1]))
+                if(hn >= int(a) and hn <= int(b)):
+                    return True
+                else:
+                    return False
 
-            # if(z >= a and z <= b):
-            #     return True
-            # else:
-            #     return False
-
-        
     if(checkHouseNumber is not None):
         # violation house number is an integer
         # assumes that a integer house number can only match with a integer centerline value
@@ -394,7 +399,7 @@ if __name__ == "__main__":
         .groupByKey() \
         .collectAsMap()
 
-    print("created cscl dictionary",len(cscl_data_map.keys()))
+    # print("created cscl dictionary",len(cscl_data_map.keys()))
     
     cscl_data_broadcast = sc.broadcast(cscl_data_map).value
 

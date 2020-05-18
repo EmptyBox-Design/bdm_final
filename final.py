@@ -181,26 +181,26 @@ def matchHouseNumber(hn, odd_house, even_house):
             else:
                 return False
         except IndexError:
+            return True
+            # a = low.split("-")
+            # b = high.split("-")
 
-            a = low.split("-")
-            b = high.split("-")
-
-            if(len(a) == 1):
-                a = int(str(a[0]) + str(0))
+            # if(len(a) == 1):
+            #     a = int(str(a[0]) + str(0))
             
-            if(len(b) == 1):
-                b = int(str(b[0]) + str(0))
+            # if(len(b) == 1):
+            #     b = int(str(b[0]) + str(0))
 
-            z = 0
-            if(type(test) == int):
-                z = test
-            else:
-                z = int(str(test[0]) + str(test[1]))
+            # z = 0
+            # if(type(test) == int):
+            #     z = test
+            # else:
+            #     z = int(str(test[0]) + str(test[1]))
 
-            if(z >= a and z <= b):
-                return True
-            else:
-                return False
+            # if(z >= a and z <= b):
+            #     return True
+            # else:
+            #     return False
 
         
     if(checkHouseNumber is not None):

@@ -193,10 +193,10 @@ def matchHouseNumber(hn, odd_house, even_house):
                         return False
                 except ValueError:
 
-                    a = float(low).split(".")
+                    a = str(float(low)).split(".")
                     a = int(str(a[0]) + str(a[1]))
 
-                    b = float(high).split(".")
+                    b = str(float(high)).split(".")
                     b = int(str(b[0]) + str(b[1]))
 
                     z = 0

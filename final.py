@@ -164,49 +164,51 @@ def matchHouseNumber(hn, odd_house, even_house):
     def compareTupes(test,low,high):
 
         # input cscl data is compound
-        try:
-            a = low.split("-")
-            a = int(str(a[0]) + str(a[1]))
-
-            b = high.split("-")
-            b = int(str(b[0]) + str(b[1]))
-
-            z = 0
-            if(type(test) == int):
-                z = test
-            else:
-                z = int(str(test[0]) + str(test[1]))
-
-            if(z >= a and z <= b):
-                return True
-            else:
-                return False
-        except IndexError:
-            # return True
-            hn = 0
+        if(len(low.strip() ) > 0 and len(high.strip()) >0):
             try:
-                hn = int(test)
-                if(hn >= int(low) and hn <= int(high)):
-                    return True
-                else:
-                    return False
-            except ValueError:
-                a = float(low).split(".")
+                a = low.split("-")
                 a = int(str(a[0]) + str(a[1]))
 
-                b = float(high).split(".")
+                b = high.split("-")
                 b = int(str(b[0]) + str(b[1]))
-                
+
                 z = 0
                 if(type(test) == int):
                     z = test
                 else:
                     z = int(str(test[0]) + str(test[1]))
 
-                if(hn >= int(a) and hn <= int(b)):
+                if(z >= a and z <= b):
                     return True
                 else:
                     return False
+            except IndexError:
+                # return True
+                hn = 0
+                try:
+                    hn = int(test)
+                    if(hn >= int(low) and hn <= int(high)):
+                        return True
+                    else:
+                        return False
+                except ValueError:
+
+                    a = float(low).split(".")
+                    a = int(str(a[0]) + str(a[1]))
+
+                    b = float(high).split(".")
+                    b = int(str(b[0]) + str(b[1]))
+
+                    z = 0
+                    if(type(test) == int):
+                        z = test
+                    else:
+                        z = int(str(test[0]) + str(test[1]))
+
+                    if(z >= a and z <= b):
+                        return True
+                    else:
+                        return False
 
     if(checkHouseNumber is not None):
         # violation house number is an integer

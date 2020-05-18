@@ -206,6 +206,15 @@ def matchHouseNumber(hn, odd_house, even_house):
                 match = compareTupes(hn, even_house[0], even_house[1])
             else:
                 match = compareTupes(hn, odd_house[0], odd_house[1])
+        elif(match == False and house_type == 'int'):
+            a = float(hn)
+            z = str(a).split(".")
+            if(len(z) > 1):
+                match = compareTupes(z, odd_house[0], odd_house[1])
+
+                if(match == False):
+                    match = compareTupes(z, even_house[0], even_house[1])
+
     else:
         match = False
     # returns either True or False

@@ -162,28 +162,23 @@ def matchHouseNumber(hn, odd_house, even_house):
     # with compound centerline datapoints
     # returns true or false if a match is made
     def compareTupes(test,low,high):
-        try:
 
-            a = low.split("-")
-            a = int(str(a[0]) + str(a[1]))
+        a = low.split("-")
+        a = int(str(a[0]) + str(a[1]))
 
-            b = high.split("-")
-            b = int(str(b[0]) + str(b[1]))
+        b = high.split("-")
+        b = int(str(b[0]) + str(b[1]))
 
-            z = 0
-            if(type(test) == int):
-                z = test
-            else:
-                z = int(str(test[0]) + str(test[1]))
+        z = 0
+        if(type(test) == int):
+            z = test
+        else:
+            z = int(str(test[0]) + str(test[1]))
 
-            if(z >= a and z <= b):
-                return True
-            else:
-                return False
-        except IndexError:
-            return False
-        except AttributeError:
+        if(z >= a and z <= b):
             return True
+        else:
+            return False
         
     if(checkHouseNumber is not None):
         # violation house number is an integer

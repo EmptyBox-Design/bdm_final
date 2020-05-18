@@ -175,14 +175,6 @@ def matchHouseNumber(hn, odd_house, even_house):
                 z = test
             else:
                 z = int(str(test[0]) + str(test[1]))
-            # a = low.split("-")
-            # a = (int(a[0]), int(a[1]))
-
-            # b = high.split("-")
-            # b = (int(b[0]), int(b[1]))
-
-            # z = test.split("-")
-            # z = (int(z[0]), int(z[1]))
 
             if(z >= a and z <= b):
                 return True
@@ -409,10 +401,5 @@ if __name__ == "__main__":
     joined.mapValues(lambda x: unpackTupes(x)) \
         .map(toCSVLine) \
         .saveAsTextFile(output_location)
-
-        # .mapValues(lambda x: unpackTupes(x)) \
-        # .map(toCSVLine) \
-        # .saveAsTextFile(output_location)
-
 
     print ("done processing!", ((time.time() - start_time) / 60), " minutes to run")
